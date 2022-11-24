@@ -5,6 +5,7 @@
 ```
 arrow==1.2.2
 monai==1.0.1
+pyarrow==10.0.1
 pytorch-lightning==1.8.1
 pytest==6.2.5
 scikit-image==0.19.3
