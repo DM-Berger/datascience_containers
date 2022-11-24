@@ -16,8 +16,14 @@ This repo contains various scripts to help automate and reproduce the building o
 Apptainer containers for reliably running deep learning and ML code (both on and off
 of Compute Canada clusters).
 
-You will need a Linux machine capable of installing `apptainer` in order to build
-the containers here.
+You will need a Linux machine capable of installing `apptainer` in order to
+build the containers here.
+
+Or, it is possible to build using a Linux virtual machine (probably very slow),
+and likely even the Windows Subsystem for Linux, if on Windows. See the
+[official
+instructions](https://apptainer.org/docs/admin/main/installation.html#installation-on-windows-or-mac)
+if you want to try this.
 
 ## CentOS 7.9.2009 (Recommended)
 
