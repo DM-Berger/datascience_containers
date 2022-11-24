@@ -2,6 +2,9 @@
 
 ## Build Steps
 
+Make sure to `cd` to this directory first (although scripts will run correctly regardless
+of your working directory).
+
 If the torch wheels are not already downloaded, run
 
 ```bash

@@ -104,4 +104,4 @@ wget
 
 ### Build Steps
 
-See the CentOS [README](https://github.com/DM-Berger/datascience_containers/blob/master/centos/deep_learning/README.md)
+See [centos/deep_learning](https://github.com/DM-Berger/datascience_containers/tree/master/centos/deep_learning)
