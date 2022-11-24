@@ -1,0 +1,157 @@
+BootStrap: docker
+From: alpine:3.16.2
+Include: apk
+
+
+%setup
+    echo "Not doing anything in %setup right now"
+
+%files
+    build_files/wheels/pip /root/.cache/pip
+
+%post
+    CONTAINER_CREATION_TIME=`date`
+    echo "export CONTAINER_CREATION_TIME=\"${CONTAINER_CREATION_TIME}\"" >> $APPTAINER_ENVIRONMENT
+    apk update
+    apk upgrade
+    # see https://github.com/relenteny/pyenv/blob/master/Dockerfile
+    # and https://stackoverflow.com/a/58948947 for included deps
+    # https://stackoverflow.com/a/21530768 for pythonX-dev dependencies,
+    # needed for kiwisolver compilation:
+    # (fatal error: Python.h: No such file or directory  #include <Python.h>)
+    # the actual solution here when given an error is to search
+    # https://pkgs.alpinelinux.org/contents?file=cppy*&path=&name=&branch=edge&arch=x86
+    # for any part of the missing file / error, literally ANY part
+    # ultimately what fixed the kiwisolver install was noticing the `cppy` string
+    # in the error message
+    apk add \
+        bash \
+        build-base \
+        bzip2-dev \
+        cmake \
+        curl \
+        cython-dev \
+        g++ \
+        gcc \
+        gfortran \
+        git \
+        lapack-dev \
+        libc-dev \
+        libedit-dev \
+        libffi-dev \
+        libressl-dev \
+        llvm11-dev \
+        make \
+        musl-dev \
+        openblas-dev \
+        openssl-dev \
+        pkgconf \
+        pkgconfig \
+        python3-dev \
+        py3-arrow \
+        py3-cppy \
+        py3-matplotlib \
+        py3-pandas \
+        py3-pip \
+        py3-pytest \
+        py3-scipy \
+        py3-scikit-learn \
+        py3-tabulate \
+        py3-tqdm \
+        py3-typing-extensions \
+        py3-wheel \
+        readline-dev \
+        rsync \
+        sqlite-dev \
+        vim \
+        wget \
+        xz-dev \
+        zlib-dev \
+        zsh
+    export LLVM_CONFIG=/usr/lib/llvm11/bin/llvm-config   # needed for Numba, llvmlite
+
+    cd /app
+    python3 -m pip install --upgrade pip
+    python3 -m pip install wheel  # needed first before Numba can install
+
+    python3 -m pip install lightning-bolts==0.5.0 \
+        llvmlite==0.39.1 \
+        numba==0.56.2 \
+        pytorch-lightning==1.7.6 \
+        scikit-image==0.19.3 \
+        seaborn==0.12.0 \
+        statsmodels==0.13.2 \
+        umap-learn==0.5.3 \
+        xgboost==1.6.2 || true
+
+    python3 -m pip install --no-deps \
+        openml==0.12.2 \
+        charset-normalizer==2.1.1 \
+        idna==3.4 \
+        liac-arff==2.5.0 \
+        minio==7.1.12 \
+        python-dateutil==2.8.2 \
+        pytz==2022.6 \
+        requests==2.28.1 \
+        six==1.16.0 \
+        urllib3==1.26.12 \
+        xmltodict==0.13.0 || true
+
+
+%environment
+    export PYENV_ROOT=/app/.pyenv
+    export PATH="$PATH:$PYENV_ROOT/bin"
+    export VENV=/app/.venv
+    export ACTIVATE=$VENV/bin/activate
+    export PYTHON=$VENV/bin/python
+    unset PYTHONSTARTUP
+
+%runscript
+    # Note for local development we can manually change this after building
+    # https://stackoverflow.com/questions/67851786/edit-runscript-of-singularity-sif-container-after-building
+    echo "Running container originally created at $CONTAINER_CREATION_TIME"
+    echo "Current time: $(date)"
+    echo "Arguments received: first:$1 second:$2   all:$*"
+    echo "Activating python..."
+    cd /app
+    source $ACTIVATE
+    echo -n "Using "
+    python --version
+    /bin/bash $*
+
+
+
+###############################################################################
+#                             App: Python testing                             #
+###############################################################################
+
+%apprun cuda-test
+    echo "Activating python..."
+    source $ACTIVATE
+    echo -n "Using "
+    python --version
+    python -c "import torch; print('Successfully imported torch and detected CUDA:', torch.cuda.is_available());"
+
+%apphelp cuda-test
+    Quickly check that we can import torch, and that CUDA is avaialable.
+
+    USAGE:
+        apptainer run --app cuda-test rmt.sif
+
+
+###############################################################################
+#            App: Pass arbitrary args to 3.8.13 python installation           #
+###############################################################################
+
+%apprun python
+    # echo "Activating python..."
+    # source $ACTIVATE
+    echo -n "Using "
+    python3 --version
+    python3 $*
+
+%apphelp python
+    Run python using the 3.10.8 system python with arbitrary args.
+
+    USAGE:
+        apptainer run --app python rmt.sif ARGS
