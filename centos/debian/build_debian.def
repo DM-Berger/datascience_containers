@@ -1,0 +1,107 @@
+BootStrap: docker
+From: debian:stable
+# MirrorURL: http://mirror.centos.org/altarch/7.9.2009/os/aarch64/
+Include: apt
+
+%setup
+    echo "Not doing anything in %setup right now"
+
+%files
+    # build_files/wheels/pip /root/.cache/pip
+
+%post
+    CONTAINER_CREATION_TIME=`date`
+    echo "export CONTAINER_CREATION_TIME=\"${CONTAINER_CREATION_TIME}\"" >> $APPTAINER_ENVIRONMENT
+    echo "Starting apt installs:"
+    apt update
+    apt install -y git gcc make wget curl cmake build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+    cd ~/.pyenv && src/configure && make -C src
+    cd ~
+    echo "Installing Python 3.10.12 via pyenv"
+    .pyenv/bin/pyenv install 3.10.12
+
+    .pyenv/versions/3.10.12/bin/python -m venv .venv
+    PYTHON=.venv/bin/python
+    "$PYTHON" -m pip install --upgrade pip setuptools wheel
+    "$PYTHON" -m pip install arrow \
+        lightning \
+        lightning-bolts \
+        llvmlite \
+        matplotlib \
+	monai \
+        numba \
+        numpy \
+        pandas \
+        pytest \
+        scikit-image \
+        scikit-learn \
+        scipy \
+        seaborn \
+        statsmodels \
+        tabulate 
+        torch \
+        torchaudio \
+        torchvision \
+        tqdm \
+        typing_extensions || echo "Failed to install some python libs"
+
+    echo "Installing timm separately because it is trashy"
+    "$PYTHON" -m pip install timm || echo "Failed to install timm"
+
+
+    mkdir -p /app
+
+
+%environment
+    export VENV=/app/.venv
+    export ACTIVATE=$VENV/bin/activate
+
+%runscript
+    # Note for local development we can manually change this after building
+    # https://stackoverflow.com/questions/67851786/edit-runscript-of-singularity-sif-container-after-building
+    echo "Running container originally created at $CONTAINER_CREATION_TIME"
+    echo "Current time: $(date)"
+    echo "Arguments received: first:$1 second:$2   all:$*"
+    echo "Activating python..."
+    cd /app
+    source $ACTIVATE
+    echo -n "Using "
+    python --version
+    /bin/bash $*
+
+
+###############################################################################
+#                             App: Python testing                             #
+###############################################################################
+
+%apprun cuda-test
+    echo "Activating python..."
+    source $ACTIVATE
+    echo -n "Using "
+    python --version
+    python -c "import torch; print('Successfully imported torch and detected CUDA:', torch.cuda.is_available());"
+
+%apphelp cuda-test
+    Quickly check that we can import torch, and that CUDA is avaialable.
+
+    USAGE:
+        apptainer run --app cuda-test green_stuff.sif
+
+
+###############################################################################
+#            App: Pass arbitrary args to 3.8.13 python installation           #
+###############################################################################
+
+%apprun python
+    echo "Activating python..."
+    source $ACTIVATE
+    echo -n "Using "
+    python --version
+    python $*
+
+%apphelp python
+    Run python using the 3.8.13 python virtual env setup with arbitrary args.
+
+    USAGE:
+        apptainer run --app python green_stuff.sif ARGS
