@@ -1,4 +1,4 @@
-# CentOS 7.9.2009
+# Debian (Stable)
 
 ## Build Steps
 
