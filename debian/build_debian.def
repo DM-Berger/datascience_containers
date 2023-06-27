@@ -84,11 +84,8 @@ Include: apt
     echo "Running container originally created at $CONTAINER_CREATION_TIME"
     echo "Current time: $(date)"
     echo "Arguments received: first:$1 second:$2   all:$*"
-    echo "Activating python..."
-    cd /app
-    source $ACTIVATE
     echo -n "Using "
-    python --version
+    "$PYTHON" --version
     /bin/bash $*
 
 
@@ -97,17 +94,15 @@ Include: apt
 ###############################################################################
 
 %apprun cuda-test
-    echo "Activating python..."
-    source $ACTIVATE
     echo -n "Using "
-    python --version
-    python -c "import torch; print('Successfully imported torch and detected CUDA:', torch.cuda.is_available());"
+    "$PYTHON" --version
+    "$PYTHON" -c "import torch; print('Successfully imported torch and detected CUDA:', torch.cuda.is_available());"
 
 %apphelp cuda-test
-    Quickly check that we can import torch, and that CUDA is avaialable.
+    Quickly check that we can import torch, and that CUDA is available.
 
     USAGE:
-        apptainer run --app cuda-test green_stuff.sif
+        apptainer run --app cuda-test debian_app.sif
 
 
 ###############################################################################
