@@ -19,26 +19,27 @@ Include: apt
     # "================================================================================="
     # "Installing pyenv"
     # "================================================================================="
-    mkdir -p /app
-    cd /app
 
-    git clone https://github.com/pyenv/pyenv.git /app/pyenv
-    cd /app/pyenv && src/configure && make -C src
-    cd /app
+    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+    cd .pyenv && src/configure && make -C src
+    cd ~
 
-    PYENV=/app/pyenv/bin/pyenv
+    PYENV=/root/.pyenv/bin/pyenv
     # "================================================================================="
     # "Installing Python 3.10.12 via pyenv"
     # "================================================================================="
     "$PYENV" install 3.10.12
-    PYTHON=/app/pyenv/versions/3.10.12/bin/python
+    PYTHON=/root/.pyenv/versions/3.10.12/bin/python
+
+    mkdir -p /app
+    cd /app
 
     # "================================================================================="
     # "Setting up Python virtual environment"
     # "================================================================================="
     cd /app
     "$PYTHON" -m venv .venv
-    PYTHON=.venv/bin/python
+    PYTHON=/app/.venv/bin/python
     "$PYTHON" -m pip install --upgrade pip setuptools wheel
 
     # "================================================================================="
