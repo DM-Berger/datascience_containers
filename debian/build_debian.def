@@ -15,15 +15,34 @@ Include: apt
     echo "Starting apt installs:"
     apt update
     apt install -y git gcc make wget curl cmake build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
-    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
-    cd ~/.pyenv && src/configure && make -C src
-    cd ~
-    echo "Installing Python 3.10.12 via pyenv"
-    .pyenv/bin/pyenv install 3.10.12
 
-    .pyenv/versions/3.10.12/bin/python -m venv .venv
+    echo "================================================================================="
+    echo "Installing pyenv"
+    echo "================================================================================="
+    mkdir -p /app
+    cd /app
+
+    git clone https://github.com/pyenv/pyenv.git .pyenv
+    cd .pyenv && src/configure && make -C src
+    cd /app
+
+    PYENV=/app/.pyenv/bin/pyenv
+    echo "================================================================================="
+    echo "Installing Python 3.10.12 via pyenv"
+    echo "================================================================================="
+    "$PYENV" install 3.10.12
+    PYTHON=/app/.pyenv/versions/3.10.12/bin/python
+
+    echo "================================================================================="
+    echo "Setting up Python virtual environment"
+    echo "================================================================================="
+    "$PYTHON" -m venv .venv
     PYTHON=.venv/bin/python
     "$PYTHON" -m pip install --upgrade pip setuptools wheel
+
+    echo "================================================================================="
+    echo "Installing Python libraries"
+    echo "================================================================================="
     "$PYTHON" -m pip install arrow \
         lightning \
         lightning-bolts \
@@ -39,23 +58,25 @@ Include: apt
         scipy \
         seaborn \
         statsmodels \
-        tabulate 
+        tabulate
         torch \
         torchaudio \
         torchvision \
         tqdm \
         typing_extensions || echo "Failed to install some python libs"
 
+    echo "================================================================================="
     echo "Installing timm separately because it is trashy"
+    echo "================================================================================="
     "$PYTHON" -m pip install timm || echo "Failed to install timm"
 
 
-    mkdir -p /app
 
 
 %environment
     export VENV=/app/.venv
     export ACTIVATE=$VENV/bin/activate
+    export PYTHON=/app/.venv/bin/python
 
 %runscript
     # Note for local development we can manually change this after building
@@ -90,7 +111,7 @@ Include: apt
 
 
 ###############################################################################
-#            App: Pass arbitrary args to 3.8.13 python installation           #
+#            App: Pass arbitrary args to 3.10.12 python installation           #
 ###############################################################################
 
 %apprun python
@@ -101,7 +122,7 @@ Include: apt
     python $*
 
 %apphelp python
-    Run python using the 3.8.13 python virtual env setup with arbitrary args.
+    Run python using the 3.10.12 python virtual env setup with arbitrary args.
 
     USAGE:
-        apptainer run --app python green_stuff.sif ARGS
+        apptainer run --app python debian_app.sif PYTHON_PROGRAM_ARGS
