@@ -115,11 +115,9 @@ Include: apt
 ###############################################################################
 
 %apprun python
-    echo "Activating python..."
-    source $ACTIVATE
     echo -n "Using "
-    python --version
-    python $*
+    "$PYTHON" --version
+    "$PYTHON" $*
 
 %apphelp python
     Run python using the 3.10.12 python virtual env setup with arbitrary args.
