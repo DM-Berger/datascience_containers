@@ -16,33 +16,34 @@ Include: apt
     apt update
     apt install -y git gcc make wget curl cmake build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev curl libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
 
-    echo "================================================================================="
-    echo "Installing pyenv"
-    echo "================================================================================="
+    # "================================================================================="
+    # "Installing pyenv"
+    # "================================================================================="
     mkdir -p /app
     cd /app
 
-    git clone https://github.com/pyenv/pyenv.git .pyenv
-    cd .pyenv && src/configure && make -C src
+    git clone https://github.com/pyenv/pyenv.git /app/pyenv
+    cd /app/pyenv && src/configure && make -C src
     cd /app
 
-    PYENV=/app/.pyenv/bin/pyenv
-    echo "================================================================================="
-    echo "Installing Python 3.10.12 via pyenv"
-    echo "================================================================================="
+    PYENV=/app/pyenv/bin/pyenv
+    # "================================================================================="
+    # "Installing Python 3.10.12 via pyenv"
+    # "================================================================================="
     "$PYENV" install 3.10.12
-    PYTHON=/app/.pyenv/versions/3.10.12/bin/python
+    PYTHON=/app/pyenv/versions/3.10.12/bin/python
 
-    echo "================================================================================="
-    echo "Setting up Python virtual environment"
-    echo "================================================================================="
+    # "================================================================================="
+    # "Setting up Python virtual environment"
+    # "================================================================================="
+    cd /app
     "$PYTHON" -m venv .venv
     PYTHON=.venv/bin/python
     "$PYTHON" -m pip install --upgrade pip setuptools wheel
 
-    echo "================================================================================="
-    echo "Installing Python libraries"
-    echo "================================================================================="
+    # "================================================================================="
+    # "Installing Python libraries"
+    # "================================================================================="
     "$PYTHON" -m pip install arrow \
         lightning \
         lightning-bolts \
@@ -65,9 +66,9 @@ Include: apt
         tqdm \
         typing_extensions || echo "Failed to install some python libs"
 
-    echo "================================================================================="
-    echo "Installing timm separately because it is trashy"
-    echo "================================================================================="
+    # "================================================================================="
+    # "Installing timm separately because it is trashy"
+    # "================================================================================="
     "$PYTHON" -m pip install timm || echo "Failed to install timm"
 
 
